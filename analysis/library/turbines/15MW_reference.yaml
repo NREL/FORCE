@@ -1,0 +1,17 @@
+blade:
+  deck_space: 200           # m^2
+  length: 120               # m, IEA-15-240-RWT
+  mass: 68                  # t, IEA-15-240-RWT
+hub_height: 150             # m, IEA-15-240-RWT
+nacelle:
+  deck_space: 200           # m^2s
+  mass: 985                 # t, IEA-15-240-RWT
+name: 15MW Reference Turbine
+rated_windspeed: 10.84      # m/s, IEA-15-240-RWT
+rotor_diameter: 240         # m, IEA-15-240-RWT
+tower:
+  deck_space: 200           # m^2
+  sections: 2               # n
+  length: 130               # m, IEA-15-240-RWT
+  mass: 803                 # t, IEA-15-240-RWT
+turbine_rating: 15          # MW

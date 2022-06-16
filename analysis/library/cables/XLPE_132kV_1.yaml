@@ -1,0 +1,9 @@
+ac_resistance: 0.128    #
+capacitance: 163        #
+conductor_size: 300     #
+cost_per_km: 500000     #
+current_capacity: 600   #
+inductance: 0.443       #
+linear_density: 40      #
+name: XLPE_132kV_1
+rated_voltage: 132
