@@ -1,0 +1,60 @@
+# Reference Site 5 characteristics
+# Deeper water, far from shore, low NCF, low capacity
+# 2030 technology choices:
+#   - 18 MW turbines
+OffshoreSubstationInstallation:
+  feeder: oss_2xfeeder
+  num_feeders: 1
+  oss_install_vessel: current_heavy_lift_vessel
+array_cable_bury_vessel: current_cable_lay_vessel
+array_cable_install_vessel: current_cable_lay_vessel
+array_system_design:
+  cables:
+  - XLPE_66kV_1
+  - XLPE_66kV_2
+design_phases:
+- MonopileDesign
+- ScourProtectionDesign
+- ArraySystemDesign
+- ExportSystemDesign
+- OffshoreSubstationDesign
+export_cable_bury_vessel: current_export_cable_lay_vessel
+export_cable_install_vessel: current_export_cable_lay_vessel
+export_system_design:
+  cables: XLPE_220kV_1
+  percent_added_length: 0.1
+feeder: current_large_feeder
+install_phases:
+  ArrayCableInstallation: 0
+  ExportCableInstallation: 0
+  MonopileInstallation: 0
+  OffshoreSubstationInstallation: 0
+  ScourProtectionInstallation: 0
+  TurbineInstallation: 0
+num_feeders: 2
+plant:
+  layout: ring
+  num_turbines: 34
+  row_spacing: 7
+  substation_distance: 1
+  turbine_spacing: 7
+port:
+  monthly_rate: 2000000
+  num_cranes: 1
+project_parameters:
+  opex_rate: 75
+  turbine_capex: 1100
+scour_protection_design:
+  cost_per_tonne: 20
+  scour_protection_depth: 1
+site:
+  depth: 50
+  distance: 135
+  distance_to_landfall: 60
+  mean_windspeed: 9.5
+spi_vessel: current_scour_protection_vessel
+substation_design:
+  num_substations: 1
+turbine: 18MW_generic
+wtiv: current_wtiv
+weather: block_island.csv
