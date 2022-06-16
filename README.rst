@@ -37,11 +37,11 @@ Project Database
 This project was designed using the 4C Project Database. As this is a paid
 subscription, this dataset is not included in this repo. If you are a 4C
 customer and have access to the project dataset, it can be placed in the
-`analysis/data/` folder and be used for the regression analysis. Please don't
+``analysis/data/`` folder and be used for the regression analysis. Please don't
 commit this file to the repo.
 
 If you do not have access to this dataset, a template file is provided that can
 be filled out with other project data and used with this package. This template
-is located at `analysis/data/project_list_template.csv`. Note: Not all columns
+is located at ``analysis/data/project_list_template.csv``. Note: Not all columns
 in the template are required but FORCE can be configured to use them in the
 regression analysis.
