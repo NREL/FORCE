@@ -20,10 +20,6 @@ DIR = os.path.split(__file__)[0]
 LIBRARY = os.path.join(DIR, "library")
 initialize_library(LIBRARY)
 
-
-# TODO: Reindex all data to the same starting year before anything happens.
-# TODO: May need to revise how forecasts are input
-
 # Create results folder if it doesn't exist
 results_dirs = [
     os.path.join(DIR, "results", "statistics")
