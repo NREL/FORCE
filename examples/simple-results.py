@@ -55,9 +55,8 @@ FLOATING_DEMO_SCALE = 2.5     # Set initial Capex around $10K/kw
 FLOATING_CAPACITY_2020 = 91   # Cumulative capacity as of previous year.  From OWMR.
 
 ## Use historic project data to compute a learning rate. File needs to be use the same format as data/project_list_template.csv. NREL uses the 4C Offshore Database to populate this file
-testfile = 'C:/Users/mshields/Documents/Projects/FORCE/FORCE/analysis/data/2021_OWMR.csv'
-# PROJECTS = pd.read_csv(os.path.join(DIR, "data", "2021_OWMR.csv"), header=2)
-PROJECTS = pd.read_csv(testfile,header=2)
+PROJECTS = pd.read_csv(os.path.join(DIR, "data", "project_list_template.csv"), header=2)
+
 # Define any filters for the data set. In this case, we filter out projects below 150 MW and projects commissioned before 2014
 FILTERS = {
     'Capacity MW (Max)': (149, ),
