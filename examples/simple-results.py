@@ -21,9 +21,6 @@ LIBRARY = os.path.join(DIR, "library")
 initialize_library(LIBRARY)
 
 
-# TODO: Reindex all data to the same starting year before anything happens.
-# TODO: May need to revise how forecasts are input
-
 # Create results folder if it doesn't exist
 results_dirs = [
     os.path.join(DIR, "results", "statistics")
@@ -33,40 +30,21 @@ for d in results_dirs:
     if not os.path.exists(d):
         os.makedirs(d)
 
-### Initialize Data
-scenario = 'high cost'
-if scenario == 'baseline':
-    capacity = 'capacity'
-    opex_scale = 1
-    ncf_scale = 1
-    fig_label = 'baseline_deploy'
-elif scenario == 'high':
-    capacity = 'high capacity'
-    opex_scale = 1
-    ncf_scale = 1
-    fig_label = 'high_deploy'
-elif scenario == 'low':
-    capacity = 'low capacity'
-    opex_scale = 1
-    ncf_scale = 1
-    fig_label = 'low_deploy'
-elif scenario == 'low cost':
-    capacity = 'capacity'
-    fig_label = 'low_cost'
-    opex_scale = 0.9
-    ncf_scale = 1.05
-elif scenario == 'high cost':
-    capacity = 'capacity'
-    fig_label = 'high_cost'
-    opex_scale = 1.1
-    ncf_scale = 0.95
+# Define start and end years
+start_year = 2021
+end_year = 2035
 
-## Forecast
+# Optional: Define scaling factors for Opex and NCF in the final year (e.g., Opex in end_year = Opex in start_year * opex_scale). Can also control this directly in the end_year config files.
+opex_scale = 1
+ncf_scale = 1
+
+## Select CSV files for fixed bottom and floating deployment
 FORECAST_FP_FIXED = os.path.join(DIR, "data", "2021_fixed_forecast.csv")
-FORECAST_FIXED = pd.read_csv(FORECAST_FP_FIXED).set_index("year").to_dict()[capacity]
+FORECAST_FIXED = pd.read_csv(FORECAST_FP_FIXED).set_index("year").to_dict()['capacity']
 FORECAST_FP_FLOATING = os.path.join(DIR, "data", "2021_floating_forecast.csv")
-FORECAST_FLOATING = pd.read_csv(FORECAST_FP_FLOATING).set_index("year").to_dict()[capacity]
+FORECAST_FLOATING = pd.read_csv(FORECAST_FP_FLOATING).set_index("year").to_dict()['capacity']
 
+# Optional - plot the deployment trajectory
 plot_deployment(list(FORECAST_FIXED.keys()), list(FORECAST_FIXED.values()),
                 list(FORECAST_FLOATING.keys()), list(FORECAST_FLOATING.values()),
                 'results/deployment.png'
@@ -76,12 +54,16 @@ plot_deployment(list(FORECAST_FIXED.keys()), list(FORECAST_FIXED.values()),
 FLOATING_DEMO_SCALE = 2.5     # Set initial Capex around $10K/kw
 FLOATING_CAPACITY_2020 = 91   # Cumulative capacity as of previous year.  From OWMR.
 
-## Regression Settings
-PROJECTS = pd.read_csv(os.path.join(DIR, "data", "2021_OWMR.csv"), header=2)
+## Use historic project data to compute a learning rate. File needs to be use the same format as data/project_list_template.csv. NREL uses the 4C Offshore Database to populate this file
+PROJECTS = pd.read_csv(os.path.join(DIR, "data", "project_list_template.csv"), header=2)
+
+# Define any filters for the data set. In this case, we filter out projects below 150 MW and projects commissioned before 2014
 FILTERS = {
     'Capacity MW (Max)': (149, ),
-    'Full Commissioning': (2014, 2021),
+    'Full Commissioning': (2014, start_year),
 }
+# Optional step to aggregate countries as control variables in the regression. For example, could do {'Germany': 'Northern Europe', 'Belgium': 'Northern Europe'}, etc.
+
 TO_AGGREGATE = {
     'United Kingdom': 'United Kingdom',
     'Germany': 'Germany',
@@ -90,11 +72,12 @@ TO_AGGREGATE = {
     'China': 'China',
     'Denmark': 'Denmark',
 }
+# Optional step to drop out countries from the regression analysis.
 TO_DROP = []
+# Define the predictor variables to use in the regression. Any of the columns from the input CSV ('data/project_list_template.csv') are valid. Predictor variables control for these effects in the regression - in other words, the learning rate is independent from changes in the predictor.
 FIXED_PREDICTORS = [
             'Country Name',
             'Water Depth Max (m)',
-            # 'Turbine MW (Max)',
             'Capacity MW (Max)',
             'Distance From Shore Auto (km)',
             ]
@@ -107,78 +90,59 @@ FLOAT_PREDICTORS = [
             ]
 
 
-## ORBIT Sites + Configs
+## Define fixed bottom and floating sites to calculate initial capex. Also define future sites, althoguh capex isn't used. ORBIT configs also contain values for Opex, NCF, FCR per year.
+# By defining a variety of different sites, FORCE estimates the initial variance in CapEx due to site conditions.
 ORBIT_FIXED_SITES = {
     "Site 1": {
-        2021: "site_1_2021.yaml",
-        2025: "site_1_2025.yaml",
-        2030: "site_1_2030.yaml",
-        2035: "site_1_2035.yaml"
+        start_year: "site_1_2021.yaml",
+        end_year: "site_1_2035.yaml"
     },
 
     "Site 2": {
-        2021: "site_2_2021.yaml",
-        2025: "site_2_2025.yaml",
-        2030: "site_2_2030.yaml",
-        2035: "site_2_2035.yaml"
+        start_year: "site_2_2021.yaml",
+        end_year: "site_2_2035.yaml"
     },
 
     "Site 3": {
-        2021: "site_3_2021.yaml",
-        2025: "site_3_2025.yaml",
-        2030: "site_3_2030.yaml",
-        2035: "site_3_2035.yaml"
+        start_year: "site_3_2021.yaml",
+        end_year: "site_3_2035.yaml"
     },
 
     "Site 4": {
-        2021: "site_4_2021.yaml",
-        2025: "site_4_2025.yaml",
-        2030: "site_4_2030.yaml",
-        2035: "site_4_2035.yaml"
+        start_year: "site_4_2021.yaml",
+        end_year: "site_4_2035.yaml"
     },
 
     "Site 5": {
-        2021: "site_5_2021.yaml",
-        2025: "site_5_2025.yaml",
-        2030: "site_5_2030.yaml",
-        2035: "site_5_2035.yaml"
+        start_year: "site_5_2021.yaml",
+        end_year: "site_5_2035.yaml"
     }
 }
 
 ORBIT_FLOATING_SITES = {
     "Site 1": {
-        2021: "site_1_2021.yaml",
-        # 2025: "site_1_2025.yaml",
-        # 2030: "site_1_2030.yaml",
-        2035: "site_1_2035.yaml"
+        start_year: "site_1_2021.yaml",
+        end_year: "site_1_2035.yaml"
     },
 
     "Site 2": {
-        2021: "site_1_2021.yaml",
-        # 2025: "site_1_2025.yaml",
-        # 2030: "site_1_2030.yaml",
-        2035: "site_1_2035.yaml"
+        start_year: "site_1_2021.yaml",
+        end_year: "site_1_2035.yaml"
     },
 
     "Site 3": {
-        2021: "site_3_2021.yaml",
-        # 2025: "site_1_2025.yaml",
-        # 2030: "site_1_2030.yaml",
-        2035: "site_3_2035.yaml"
+        start_year: "site_3_2021.yaml",
+        end_year: "site_3_2035.yaml"
     },
 
     "Site 4": {
-        2021: "site_4_2021.yaml",
-        # 2025: "site_1_2025.yaml",
-        # 2030: "site_1_2030.yaml",
-        2035: "site_4_2035.yaml"
+        start_year: "site_4_2021.yaml",
+        end_year: "site_4_2035.yaml"
     },
 
     "Site 5": {
-        2021: "site_5_2021.yaml",
-        # 2025: "site_1_2025.yaml",
-        # 2030: "site_1_2030.yaml",
-        2035: "site_5_2035.yaml"
+        start_year: "site_5_2021.yaml",
+        end_year: "site_5_2035.yaml"
     },
 }
 
@@ -256,7 +220,7 @@ def stats_check(regression):
 
 def linearize_forecast(forecast):
     """
-    Linearize the forecasted capacity over forecast period.
+    Linearize the forecasted capacity over forecast period. Thsi helps to smooth out the projected costs.
 
     Parameters
     ----------
@@ -294,11 +258,11 @@ def run_orbit_configs(sites, b0, upcoming, years, opex_scale, ncf_scale, initial
                 weather = None
 
             #TODO: better indexing
-            if yr == 2021:
+            if yr == start_year:
                 ncf_i = config['project_parameters']['ncf']
                 opex_i = config['project_parameters']['opex']
                 fcr_i = config['project_parameters']['fcr']
-            elif yr == 2035:
+            elif yr == end_year:
                 ncf_f = config['project_parameters']['ncf']
                 opex_f = config['project_parameters']['opex']
                 fcr_f = config['project_parameters']['fcr']
@@ -313,10 +277,8 @@ def run_orbit_configs(sites, b0, upcoming, years, opex_scale, ncf_scale, initial
                 site_data.loc[int(yr), "ORBIT"] = project.total_capex_per_kw * FLOATING_DEMO_SCALE
 
 
-        min_yr = min(configs.keys())  # TODO: What if min_yr doesn't line up with first forecast year?
+        min_yr = min(configs.keys())
 
-        # TODO: Not sure which one of these is more appropriate.
-        # c = site_data.loc[min_yr, "ORBIT"] / (regression.installed_capacity ** b0)
         if initial_capex:
             c = initial_capex / (upcoming[min_yr] ** b0)
         else:
@@ -352,13 +314,16 @@ def regression_and_plot(FORECAST, PROJECTS, FILTERS, TO_AGGREGATE, TO_DROP, PRED
     # Forecast
     years, linear_forecast = linearize_forecast(FORECAST)
 
-    # Regression
+    # Run the regression analysis to compute the learning rate
     regression = run_regression(PROJECTS, FILTERS, TO_AGGREGATE, TO_DROP, PREDICTORS)
+    # Check the residuals of the regression
     res_x, res_y = stats_check(regression)
+    # Extract key variables from the regression fit (the learning rate and the standard error)
     b0 = regression.cumulative_capacity_fit
     bse = regression.cumulative_capacity_bse
+
+    # Extract the upcoming capacity per year in the forecast to develop the cost forecast
     if fixfloat == 'fixed':
-        # Todo: Should this also be FORECAST instead of linear_forecast?
         upcoming_capacity = {
             k: v - regression.installed_capacity for k, v in linear_forecast.items()
         }
@@ -368,79 +333,46 @@ def regression_and_plot(FORECAST, PROJECTS, FILTERS, TO_AGGREGATE, TO_DROP, PRED
             k: v - FLOATING_CAPACITY_2020 for k, v in FORECAST.items()
         }
 
-    # ORBIT Results
-    combined_outputs = run_orbit_configs(ORBIT_SITES, b0, upcoming_capacity, years,
-                                         opex_scale, ncf_scale, fixfloat=fixfloat)
-    initial_capex_range = combined_outputs.loc[2021, 'ORBIT'].values
+    # Run ORBIT to define initial site costs. Prescribe initial and final values for Opex, NCF, FCR
+    combined_outputs = run_orbit_configs(ORBIT_SITES, b0, upcoming_capacity, years, opex_scale, ncf_scale, fixfloat=fixfloat)
+    # Save the initial capex values for all defined sites for plotting
+
+    initial_capex_range = combined_outputs.loc[start_year, 'ORBIT'].values
+    # Define the average starting capex and the standard deviation between all sites
     avg_start = pd.pivot_table(combined_outputs.reset_index(), values='ORBIT', index='index').iloc[0].values[0]
     std_start =  \
         pd.pivot_table(combined_outputs.reset_index(), values='ORBIT', index='index', aggfunc=np.std).iloc[0].values[0]
-    std_lcoe_start = \
-        pd.pivot_table(combined_outputs.reset_index(), values='LCOE', index='index', aggfunc=np.std).iloc[0].values[0]
 
-    # Bounds for faster/slower learning rate
-    combined_outputs_max_conservative = run_orbit_configs(ORBIT_SITES, b0 + bse, upcoming_capacity, years,
-                                                      opex_scale, ncf_scale, initial_capex=avg_start + std_start,
-                                                      fixfloat=fixfloat)
-    combined_outputs_min_aggressive = run_orbit_configs(ORBIT_SITES, b0 - bse, upcoming_capacity, years,
-                                                    opex_scale, ncf_scale, initial_capex=avg_start - std_start,
-                                                    fixfloat=fixfloat)
-    combined_outputs_avg_conservative = run_orbit_configs(ORBIT_SITES, b0 + bse, upcoming_capacity, years,
-                                                          opex_scale, ncf_scale, fixfloat=fixfloat)
-    combined_outputs_avg_aggressive = run_orbit_configs(ORBIT_SITES, b0 - bse, upcoming_capacity, years,
-                                                        opex_scale, ncf_scale, fixfloat=fixfloat)
+    # Use high/low values of learning rates (b0 +/- bse) to define different cost trajectories and subsequent uncertainty
+    # Naming convention:
+    #   _max_conservative: Maximum initial capex, conservative learning rate (highest capex in end year)
+    #   _min_aggressive: Minimum initial capex, aggressive learning rate (lowest capex in end year)
+    combined_outputs_max_conservative = run_orbit_configs(ORBIT_SITES, b0 + bse, upcoming_capacity, years, opex_scale, ncf_scale, initial_capex=avg_start + std_start,fixfloat=fixfloat)
+    combined_outputs_min_aggressive = run_orbit_configs(ORBIT_SITES, b0 - bse, upcoming_capacity, years,opex_scale, ncf_scale, initial_capex=avg_start - std_start,fixfloat=fixfloat)
 
-    # Capex
+    # Create an array of capex trajectories
     avg_capex = np.array(pd.pivot_table(combined_outputs.reset_index(),
                                         values='Regression', index='index').loc[:,'Regression'])
-    avg_capex_conservative = \
-        np.array(pd.pivot_table(combined_outputs_avg_conservative.reset_index(),
-                                values='Regression', index='index').loc[:, 'Regression'])
-    avg_capex_aggressive = \
-        np.array(pd.pivot_table(combined_outputs_avg_aggressive.reset_index(),
-                                values='Regression', index='index').loc[:, 'Regression'])
     max_capex_conservative = \
         np.array(pd.pivot_table(combined_outputs_max_conservative.reset_index(),
                                 values='Regression', index='index', aggfunc=max).loc[:,'Regression'])
     min_capex_aggressive = \
         np.array(pd.pivot_table(combined_outputs_min_aggressive.reset_index(),
                                 values='Regression', index='index', aggfunc=min).loc[:,'Regression'])
-    # print('Avg', avg_capex)
-    # print('Avg cons', avg_capex_conservative)
-    # print('Avg agg', avg_capex_aggressive)
-    # print('Max cons', max_capex_conservative)
-    # print('Min agg', min_capex_aggressive)
-
-    # LCOE
-    avg_lcoe = np.array(pd.pivot_table(combined_outputs.reset_index(), values='LCOE', index='index').loc[:,'LCOE'])
-    max_lcoe_conservative = np.array(pd.pivot_table(combined_outputs_max_conservative.reset_index(),
-                                                    values='LCOE', index='index', aggfunc=max).loc[:,'LCOE'])
-    min_lcoe_aggressive = np.array(pd.pivot_table(combined_outputs_min_aggressive.reset_index(),
-                                                  values='LCOE', index='index', aggfunc=min).loc[:,'LCOE'])
-
-    # print('Avg', avg_lcoe)
-    # print('Max cons', max_lcoe_conservative)
-    # print('Min agg', min_lcoe_aggressive)
 
     ### Write data
     pd.DataFrame({
         'Year': years,
         'Capex': avg_capex,
-        'Capex (average start and conservative LR)': avg_capex_conservative,
-        'Capex (average start and aggressive LR)': avg_capex_aggressive,
         'Capex (max start and conservative LR)': max_capex_conservative,
         'Capex (min start and aggressive LR)': min_capex_aggressive,
         'Capex percent reductions': 1 - avg_capex / avg_capex[0],
-        'LCOE': avg_lcoe,
-        'LCOE (max start and conservative LR)': max_lcoe_conservative,
-        'LCOE (min start and aggressive LR)': min_lcoe_aggressive,
-        'LCOE percent reductions': 1 - avg_lcoe/ avg_lcoe[0]
-    }).to_csv('results/' + fixfloat + '_' + fig_label + '_data_out.csv')
+    }).to_csv('results/' + fixfloat + '_data_out.csv')
 
 
     ### Plotting
     # Forecast
-    fname_capex = 'results/' + fixfloat + '_capex_forecast_' + fig_label + '.png'
+    fname_capex = 'results/' + fixfloat + '_capex_forecast.png'
     fig_capex, ax_capex = plot_forecast(
         upcoming_capacity,
         avg_capex,
@@ -452,36 +384,9 @@ def regression_and_plot(FORECAST, PROJECTS, FILTERS, TO_AGGREGATE, TO_DROP, PRED
         fname=fname_capex
     )
 
-    fname_lcoe = 'results/' + fixfloat + '_lcoe_forecast_' + fig_label + '.png'
-    plot_forecast(
-        upcoming_capacity,
-        avg_lcoe,
-        min_lcoe_aggressive,
-        max_lcoe_conservative,
-        std_lcoe_start,
-        ylabel='LCOE, $/MWh',
-        fixfloat=fixfloat,
-        fname=fname_lcoe
-    )
-
     # Residuals
     fname_residuals = 'results/statistics/' + fixfloat + '_residuals.png'
     scatter_plot(res_x, res_y, 'Fitted values (log of CapEx)', 'Residuals', fname=fname_residuals)
-
-    # Sensitivities
-    fname_uncert = 'results/' + fixfloat + '_capex_forecast' + fig_label + '_uncertainty.png'
-    plot_forecast_comp(
-        fig_capex,
-        ax_capex,
-        upcoming_capacity,
-        avg_capex,
-        avg_capex_aggressive,
-        avg_capex_conservative,
-        initial_capex_range,
-        ylabel='CapEx, $/kW',
-        fname=fname_uncert
-    )
-
 
 
 ### Main Script
