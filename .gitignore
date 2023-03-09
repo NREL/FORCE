@@ -113,3 +113,6 @@ ENV/
 # Results
 analysis/results/
 results/
+
+# Protect Data
+examples/data/*_OWMR.csv
