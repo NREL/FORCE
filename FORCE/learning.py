@@ -304,7 +304,7 @@ class Regression:
         """
 
         vif = []
-        for name, data in df.iteritems():
+        for name, data in df.items():
             r_sq_i = sm.OLS(data, df.drop(name, axis=1)).fit().rsquared
             vif.append(1.0 / (1.0 - r_sq_i))
 
