@@ -1,20 +1,31 @@
 """"Distribution setup"""
 
 import os
+import codecs
 
 from setuptools import setup, find_packages
-
-import versioneer
 
 ROOT = os.path.abspath(os.path.dirname(__file__))
 
 with open("README.rst", "r") as fh:
     long_description = fh.read()
 
+def read(rel_path):
+    here = os.path.abspath(os.path.dirname(__file__))
+    with codecs.open(os.path.join(here, rel_path), 'r') as fp:
+        return fp.read()
+
+def get_version(rel_path):
+    for line in read(rel_path).splitlines():
+        if line.startswith('__version__'):
+            delim = '"' if '"' in line else "'"
+            return line.split(delim)[1]
+    else:
+        raise RuntimeError("Unable to find version string.")
+
 setup(
     name="FORCE",
-    version=versioneer.get_version(),
-    cmdclass=versioneer.get_cmdclass(),
+    version=get_version("package/__init__.py"),
     description="Forecasting Offshore wind Reductions in Cost of Energy",
     classifiers=[
         "Development Status :: 5 - Production/Stable",
