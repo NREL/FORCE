@@ -3,7 +3,7 @@ FORCE
 
 Forecasting Offshore wind Reductions in Cost of Energy
 
-:Version: 0.1
+:Version: 0.1.1
 :Authors: `Jake Nunemaker <https://www.linkedin.com/in/jake-nunemaker/>`_, `Matt Shields <https://www.linkedin.com/in/matt-shields-834a6b66/>`_, `Philipp Beiter <https://www.linkedin.com/in/philipp-beiter-365b4189/>`_
 
 Installation

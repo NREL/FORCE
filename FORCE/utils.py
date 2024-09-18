@@ -71,7 +71,7 @@ def plot_learning_forecast(
         y0 = calc_curve(x, C0_0, b0, capex_0=capex)
         y0_per_year = calc_curve(upcoming, C0_0, b0, capex_0=capex)
         _out_col = "Percent change from initial CapEx"
-
+    
     ax1.plot(x, y0, "k-")
     ax1.set_xlabel("Cumulative Capacity")
     ax1.set_ylabel("CAPEX, $/KW")
